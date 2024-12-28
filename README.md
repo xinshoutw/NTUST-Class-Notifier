@@ -1,4 +1,4 @@
-# Course Lookup & Discord Bot
+# NTUST-Class-Notifier
 
 本專案旨在來查詢台科大課程空額，可選擇將結果透過 **Discord Bot** 私訊通知指定使用者。  
 程式中並未包含任何**搶課**或類似之行為

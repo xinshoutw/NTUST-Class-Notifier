@@ -17,6 +17,7 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 logging.getLogger("httpx").propagate = False
 
 # ========== Discord Bot 設定 ========== #

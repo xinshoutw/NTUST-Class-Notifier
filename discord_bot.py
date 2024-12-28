@@ -5,7 +5,6 @@ import logging
 import discord
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 class DiscordBot(discord.Client):

@@ -10,8 +10,7 @@ logger.setLevel(logging.INFO)
 
 class DiscordBot(discord.Client):
     """
-    這是一個簡易的 Discord Bot 範例。
-    - 不包含 CourseClient 相關邏輯，只專注在機器人的連線與傳送訊息。
+    機器人的連線與傳送訊息
     """
 
     def __init__(self, *, intents: discord.Intents, target_user_ids: list[int]):
@@ -26,7 +25,7 @@ class DiscordBot(discord.Client):
 
     async def send_dm(self, message: str):
         """
-        傳送私訊給預設的 target_user_id。
+        傳送私訊給預設的 target_user_ids
         """
         await self.ready_event.wait()  # 確保 Bot 已經 on_ready
 

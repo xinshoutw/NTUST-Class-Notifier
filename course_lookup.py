@@ -79,9 +79,10 @@ class CourseClient:
     @staticmethod
     async def fetch_course(client: httpx.AsyncClient, url: str, payload: dict) -> tuple[str, int, int]:
         """
-        單筆課程查詢函式：使用現有 client 對指定 url 發出 POST 請求。
-        返回 (課程識別, 目前人數, 人數上限)。
+        單筆課程查詢函式：使用現有 client 對指定 url 發出 POST 請求
+        :return (課程識別, 目前人數, 人數上限)
         """
+
         try:
             logger.debug(f"POST URL={url} | Payload={payload}")
             response = await client.post(url, json=payload)

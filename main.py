@@ -46,7 +46,8 @@ async def main():
             if cur_member < limit and limit > 0:
                 msg = (f"課程：{course_info}\n"
                        f"人數：{cur_member} / {limit}\n"
-                       f"有空位囉，快去選課！")
+                       f"有空位囉，快去選課！\n"
+                       f"https://courseselection.ntust.edu.tw/AddAndSub/B01/B01")
                 logger.info(msg)
 
                 if bot is not None:

@@ -103,7 +103,7 @@ class CourseClient:
                 f"成功取得課程 {payload['CourseNo']} 數據：{course_name}, "
                 f"人數={cur_member}, 上限={member_limit}"
             )
-            return f"{payload['CourseNo']} {course_name} | {first_course.get("CourseTeacher", "未知老師")}", cur_member, member_limit
+            return f"{payload['CourseNo']} {course_name} | {first_course.get('CourseTeacher', '未知老師')}", cur_member, member_limit
 
         except httpx.RequestError as e:
             logger.debug(f"課程 {payload['CourseNo']} 請求錯誤：{e}")

@@ -57,9 +57,15 @@ def get_current_period() -> str:
     return "unknown"
 
 
-def get_selection_link() -> str:
+def current_phase(selector: CourseSelector | None) -> str:
+    """實際探測到的階段優先，沒有 selector 時退回日期判斷"""
+    if selector and selector.phase != "unknown":
+        return selector.phase
+    return get_current_period()
+
+
+def get_selection_link(period: str) -> str:
     """根據時段回傳對應的選課連結"""
-    period = get_current_period()
     if period == "dept":
         return "▸ **電選課加選:** https://courseselection.ntust.edu.tw/First/A06/A06"
     if period == "open":
@@ -79,6 +85,7 @@ async def monitor_specific_courses(
     while True:
         try:
             courses_to_check = await course_client.get_courses()
+            phase = current_phase(selector)
             for course_no, course_name, teacher, cur_member, limit, node in courses_to_check:
                 course_info = f"{course_no} {course_name} | {teacher}"
 
@@ -86,10 +93,10 @@ async def monitor_specific_courses(
                     logger.debug(f"課程依然額滿: {course_info} ({cur_member}/{limit})")
                     continue
 
-                # 電選課加選期間，檢查該課程的系所人數限制
+                # 初選加退選期間，檢查該課程的系所人數限制
                 dept_info_str = ""
                 dept_name = course_client.get_department_for_course(course_no)
-                if dept_name and get_current_period() == "dept":
+                if dept_name and phase == "dept":
                     semester = course_client.payloads[0].Semester
                     dept_result = await course_client.get_department_limit(semester, course_no, dept_name)
                     if dept_result is not None:
@@ -106,9 +113,9 @@ async def monitor_specific_courses(
                 # 有空位，播放音效提醒
                 play_sound("vacancy")
 
-                # 自動加選（電選課加選期間）
+                # 自動加選（初選加退選 / 全校加退選）
                 enroll_result_str = ""
-                if selector and get_current_period() == "dept":
+                if selector and phase in ("dept", "open"):
                     success, body = await run_sync(selector.select_course, course_no)
                     if success:
                         # 驗證是否真的加選成功
@@ -124,7 +131,7 @@ async def monitor_specific_courses(
                         enroll_result_str = f"\n\n**❌ 自動加選失敗**\n回應: `{body[:100]}`"
                         play_sound("failure")
 
-                link = get_selection_link()
+                link = get_selection_link(phase)
                 msg = (
                     f"**🎯 您鎖定的課程有空位囉！**\n\n"
                     f"```{course_info} ({','.join(node)})\n"
@@ -239,7 +246,8 @@ async def main():
         selector = CourseSelector(STUDENT_ID, PASSWORD)
         logged_in = await run_sync(selector.login)
         if logged_in:
-            logger.info("選課系統自動加選功能已啟用")
+            phase = await run_sync(selector.detect_phase)
+            logger.info(f"選課系統自動加選功能已啟用（目前階段: {phase}）")
         else:
             logger.warning("選課系統登入失敗，自動加選功能停用")
             selector = None
@@ -257,7 +265,9 @@ async def main():
         for course_no, name, teacher, _, _, node in initial_courses:
             startup_message_parts.append(f"- `{course_no}` {name} | {teacher} ({','.join(node)})")
     if selector:
-        startup_message_parts.append("\n**⚡ 自動加選已啟用（電選課加選期間偵測到空位將自動送出）**")
+        phase_label = {"dept": "初選加退選", "open": "全校加退選"}.get(selector.phase, "非選課期間")
+        startup_message_parts.append(
+            f"\n**⚡ 自動加選已啟用（目前階段: {phase_label}，偵測到空位將自動送出）**")
 
     startup_message_parts.append("\n**📊 同時，已啟動所有課程人數變動監控 (每15秒)。**")
     startup_message = "\n".join(startup_message_parts)

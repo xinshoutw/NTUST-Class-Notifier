@@ -202,7 +202,10 @@ class CourseSelector:
             return False
 
     def detect_phase(self) -> str:
-        """探測目前是哪個選課階段：能無 alert 進入該頁面就是該階段
+        """探測目前是哪個選課階段
+
+        非該階段時伺服器會 302 導回 Home/Index，所以「最終網址還停在原頁」
+        就是目前開放的階段。
 
         回傳 'dept'(初選加退選) / 'open'(全校加退選) / 'unknown'
         """
@@ -213,7 +216,7 @@ class CourseSelector:
             if _is_login_page(resp):
                 self._logged_in = False
                 return "unknown"
-            if resp.is_success and not _flash_alert(resp.text):
+            if str(resp.url) == url:
                 self.phase = phase
                 return phase
         self.phase = "unknown"
